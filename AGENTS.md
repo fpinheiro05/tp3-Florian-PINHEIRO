@@ -15,6 +15,7 @@ C'est le **TP3** du cours *Outils d'IA pour développeurs – IUT 2026/2027*.
 | `src/main.ts` | Orchestrateur : état, progression, victoire |
 | `src/game/levels.ts` | **Donnée du jeu** : contrats piégés, lignes buguées, 3 indices, correctifs |
 | `src/game/engine.ts` | Règles pures (aucun DOM, aucun Three.js) : sélection, score, sauvegarde |
+| `src/game/collision.ts` | Collisions pures (murs, portes, pupitres), testables sans WebGL |
 | `src/game/world.ts` | Scène Three.js : salles, portes, terminaux, contrôles FPS |
 | `src/game/ui.ts` | Interface DOM : titre, HUD, panneau d'audit, victoire |
 | `src/game/highlight.ts` | Coloration syntaxique Solidity |

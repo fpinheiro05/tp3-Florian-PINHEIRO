@@ -1,7 +1,7 @@
 # Solidity Escape 3D
 
 > Escape game 3D jouable au navigateur : vous êtes enfermé dans un laboratoire de smart contracts.
-> Cinq contrats Solidity **piégés** bloquent autant de portes. Repérez **toutes** les lignes buguées de chaque contrat, validez l'audit et évadez-vous. **Trois indices par salle** — le troisième donne la réponse, mais coûte cher en score.
+> Trois contrats Solidity **piégés** bloquent autant de portes. Repérez la ligne buguée de chaque contrat, validez l'audit et évadez-vous. **Trois indices par salle** — le troisième donne la réponse, mais coûte cher en score.
 
 Réalisé pour le **TP3** du cours *IA – IUT 2026* (Florian PINHEIRO).
 
@@ -43,17 +43,18 @@ npm run preview  # sert dist/ sur http://localhost:4173
    - **Indice 3** — **la réponse** (−500 pts)
 5. Chaque échec coûte −50 pts. La porte s'ouvre quand la salle est validée.
 
-## 🏫 Les 5 salles
+## 🏫 Les 3 salles
 
-| Salle | Contrat | Vulnérabilité | Difficulté |
-| --- | --- | --- | --- |
-| 01 — Le Coffre | `Vault` | Réentrance | Facile |
-| 02 — Le Badge | `BadgeDoor` | Authentification `tx.origin` | Facile |
-| 03 — La Monnaie | `LabToken` | Contrôle d'accès manquant | Moyen |
-| 04 — Le Casino | `LabLottery` | Aléa prévisible | Moyen |
-| 05 — Le Cœur | `Core` | `delegatecall` / appel non vérifié | Difficile |
+| Salle | Contrat | Vulnérabilité | Difficulté | Points |
+| --- | --- | --- | --- | --- |
+| 01 — Le Badge | `LabToken` | Contrôle d'accès (modificateur oublié) | Facile | 1000 |
+| 02 — Le Fantôme | `BadgeDoor` | Authentification `tx.origin` | Facile | 1000 |
+| 03 — Le Coffre | `Vault` | Réentrance (ordre des opérations) | Moyen | 1200 |
 
-Chaque niveau est défini dans `src/game/levels.ts` avec son code, ses lignes buguées, ses 3 indices, l'explication et le correctif — la **donnée du jeu est ainsi séparée du moteur**, ce qui rend l'ajout de salles trivial.
+Chaque salle est pensée comme une **mini-leçon** à la CryptoZombies : une mission claire en français,
+un contrat court et lisible, et un seul bug à désigner. Chaque niveau est défini dans
+`src/game/levels.ts` avec son code, ses lignes buguées, ses 3 indices, l'explication et le correctif —
+la **donnée du jeu est ainsi séparée du moteur**, ce qui rend l'ajout de salles trivial.
 
 ## 🏗️ Architecture
 
@@ -62,14 +63,16 @@ src/
 ├── main.ts              # orchestrateur : état, progression, victoire
 ├── styles.css           # HUD, overlays, coloration
 └── game/
-    ├── levels.ts        # les 5 contrats piégés + indices + explications
+    ├── levels.ts        # les 3 contrats piégés + indices + explications
     ├── engine.ts        # règles pures : sélection, check, score, sauvegarde
+    ├── collision.ts     # collisions pures : murs, portes, pupitres (testables)
     ├── highlight.ts     # coloration syntaxique Solidity maison
     ├── world.ts         # scène Three.js : salles, portes, terminaux, FPS
     ├── ui.ts            # interfaces DOM : titre, HUD, panneau d'audit, victoire
     └── audio.ts         # effets sonores WebAudio (sans assets)
 tests/
-└── engine.test.ts       # 15 tests sur les règles et la coloration
+├── engine.test.ts       # 16 tests sur les règles et la coloration
+└── collision.test.ts    # 12 tests sur les collisions (murs, portes, pupitres)
 ```
 
 Le **moteur (`engine.ts`) est pur** (aucun DOM, aucun Three.js) et **ne lève jamais** :
@@ -113,7 +116,7 @@ npm run verify   # lint + typecheck + tests + build
 ```
 
 - **TypeScript strict** (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`…)
-- **15 tests unitaires** sur les règles de jeu et la coloration
+- **28 tests unitaires** sur les règles de jeu, la coloration et les collisions
 - **ESLint** sans warning
 - Build Vite ~130 ko gzip
 

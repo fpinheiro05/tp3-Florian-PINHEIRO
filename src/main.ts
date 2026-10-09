@@ -182,7 +182,7 @@ function main(): void {
     const minutes = Math.round(totalTime / 60000);
     const hints = Object.values(state.progress.solved).reduce((s, r) => s + r.hintsUsed, 0);
     let comment = `Évasion en ${minutes} min, ${hints} indice(s) utilisé(s). `;
-    comment += score >= 5500 ? "Auditeur d'élite." : score >= 4000 ? "Excellent travail." : score >= 2500 ? "Bien joué." : "L'essentiel est d'être sorti.";
+    comment += score >= 3000 ? "Auditeur d'élite." : score >= 2300 ? "Excellent travail." : score >= 1500 ? "Bien joué." : "L'essentiel est d'être sorti.";
     ui.showWin(score, comment, rows, true);
     sfx.win();
     if (document.pointerLockElement) document.exitPointerLock();

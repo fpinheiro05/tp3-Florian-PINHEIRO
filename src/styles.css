@@ -191,6 +191,21 @@ canvas#scene {
   margin-bottom: 16px;
 }
 
+.mission {
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  background: rgba(56, 189, 248, 0.09);
+  border-radius: 10px;
+  padding: 11px 15px;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 14px;
+  color: #dbeafe;
+}
+
+.mission b {
+  color: var(--accent);
+}
+
 .panel-head {
   display: flex;
   justify-content: space-between;
@@ -248,7 +263,7 @@ canvas#scene {
 }
 
 .code-body {
-  max-height: 46vh;
+  max-height: 54vh;
   overflow: auto;
   padding: 8px 0;
 }

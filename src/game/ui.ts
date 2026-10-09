@@ -67,7 +67,7 @@ export class Ui {
         </div>
         <div class="hud-stack">
           <div class="chip">Score : <span class="score" id="chip-score">0</span></div>
-          <div class="chip">Salles : <b><span id="chip-solved">0</span>/5</b></div>
+          <div class="chip">Salles : <b><span id="chip-solved">0</span>/${LEVELS.length}</b></div>
         </div>
       </div>
       <div id="crosshair"></div>
@@ -89,10 +89,11 @@ export class Ui {
           </div>
           <button class="ghost" id="pz-close" title="Fermer (Échap)">✕</button>
         </div>
+        <div class="mission" id="pz-mission">🎯 Mission</div>
         <div class="code-wrap">
           <div class="code-title">
             <span id="pz-file">Vault.sol</span>
-            <span><span id="pz-count">0</span> ligne(s) sélectionnée(s)</span>
+            <span><span id="pz-count">0</span> sélectionnée(s) · <b id="pz-bugs">1</b> bug(s) à trouver</span>
           </div>
           <div class="code-body" id="pz-code"></div>
         </div>
@@ -263,6 +264,8 @@ export class Ui {
     this.byId("pz-tag").className = `tag diff-${snap.level.difficulty}`;
     this.byId("pz-tag").textContent = `${snap.level.roomName} · ${snap.level.vulnerability} · ${snap.level.difficulty}`;
     this.byId("pz-desc").textContent = snap.level.description;
+    this.byId("pz-mission").textContent = `🎯 ${snap.level.mission}`;
+    this.byId("pz-bugs").textContent = String(snap.level.bugLines.length);
     this.byId("pz-file").textContent = `${snap.level.id}.sol`;
 
     this.renderCode();

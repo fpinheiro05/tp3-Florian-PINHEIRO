@@ -10,6 +10,7 @@ export interface Level {
   title: string;              // titre du contrat
   vulnerability: string;      // classe de bug affichée
   difficulty: "Facile" | "Moyen" | "Difficile";
+  mission: string;            // consigne claire affichée en haut du panneau
   description: string;        // message d'ambiance pour le joueur
   code: string[];             // lignes Solidity ; ligne affichée N = code[N-1]
   bugLines: number[];         // numéros 1-based des lignes contenant le(s) bug(s)

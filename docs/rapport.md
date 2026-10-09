@@ -5,7 +5,7 @@
 ## 1. L'idée
 
 Un **escape game 3D** jouable au navigateur. Le joueur est enfermé dans un laboratoire de
-smart contracts : cinq contrats Solidity **piégés** bloquent autant de portes. Il doit repérer
+smart contracts : trois contrats Solidity **piégés** bloquent autant de portes. Il doit repérer
 toutes les lignes buguées de chaque contrat pour valider l'audit et s'échapper.
 
 Trois indices par salle aident à avancer, et **le troisième donne la réponse** — mais coûte
@@ -20,18 +20,18 @@ accessibles :
 - **Sécurité Solidity** : réentrance, `tx.origin`, contrôle d'accès, aléa prévisible, `delegatecall`.
 - **Moteur de jeu robuste** : entrées corrompues, `localStorage` cassé, score borné, pas d'exception.
 
-## 3. Les cinq salles
+## 3. Les trois salles
 
 | Salle | Contrat | Vulnérabilité | Difficulté | Points |
 | --- | --- | --- | --- | --- |
-| 01 — Le Coffre | `Vault` | Réentrance | Facile | 1000 |
-| 02 — Le Badge | `BadgeDoor` | Auth `tx.origin` | Facile | 1000 |
-| 03 — La Monnaie | `LabToken` | Contrôle d'accès | Moyen | 1200 |
-| 04 — Le Casino | `LabLottery` | Aléa prévisible | Moyen | 1200 |
-| 05 — Le Cœur | `Core` | `delegatecall` / upgrade | Difficile | 1500 |
+| 01 — Le Badge | `LabToken` | Contrôle d'accès (modificateur `onlyOwner` oublié) | Facile | 1000 |
+| 02 — Le Fantôme | `BadgeDoor` | Authentification `tx.origin` | Facile | 1000 |
+| 03 — Le Coffre | `Vault` | Réentrance (ordre des opérations) | Moyen | 1200 |
 
-Chaque bug renvoie à une attaque réelle (DAO 2016, Parity 2017, OWASP SC Top 10) ; chaque salle
-fournit une **explication** et un **correctif** idiomatique.
+Chaque salle est une **mini-leçon à la CryptoZombies** : une mission explicite (« trouve la fonction qui
+devrait être réservée au propriétaire »), un contrat court et lisible, **un seul bug** à désigner, et une
+progression de difficulté douce. Après l'audit, le joueur reçoit l'**explication** de la faille
+(DAO 2016…) et le **correctif** idiomatique.
 
 ## 4. Architecture
 
@@ -42,6 +42,7 @@ src/
 └── game/
     ├── levels.ts      la donnée : contrats, lignes buguées, 3 indices, correctifs
     ├── engine.ts      règles PURES : sélection, check, score, sauvegarde — ne lève jamais
+    ├── collision.ts   collisions PURES : murs, portes, pupitres (testables sans WebGL)
     ├── highlight.ts   coloration syntaxique Solidity maison
     ├── world.ts       scène Three.js (salles, portes, terminaux, FPS)
     ├── ui.ts          interfaces DOM (titre, HUD, panneau d'audit, victoire)
@@ -73,7 +74,7 @@ Voir la capture `docs/screenshots/08-harness.png`. Tout est dans le dépôt :
   `null`, `localStorage` corrompu. Il ne lève jamais.
 - Score plancher à 100, pénalités d'indices plafonnées, progression réparable.
 - TypeScript **strict** (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`), zéro `any`.
-- **15 tests Vitest** + lint + build, en local et en **CI GitHub Actions** (`npm run verify`).
+- **28 tests Vitest** + lint + build, en local et en **CI GitHub Actions** (`npm run verify`).
 
 ## 7. Lancer
 

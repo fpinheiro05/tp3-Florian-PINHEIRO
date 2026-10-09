@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { LEVELS } from "./levels";
+import { resolveCollision } from "./collision";
 
 export interface Interactable {
   kind: "terminal" | "door";
@@ -18,7 +19,11 @@ const ROOM_W = 16;
 const ROOM_D = 20;
 const ROOM_H = 6;
 const WALL = 0.4;
-const GAP = 4;
+const PLAYER_MARGIN = 0.6;
+const DOOR_OPEN_HALF = 2.3; // demi-largeur franchissable de l'ouverture (5 de large)
+const WALL_BAND = 0.7; // épaisseur de collision d'un plan-mur
+const TERMINAL_HALF = 0.95; // demi-emprise du pupitre
+const EXIT_DEPTH = 11;
 
 export interface World {
   start: () => void;
@@ -46,25 +51,25 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x070b14);
-  scene.fog = new THREE.Fog(0x070b14, 14, 64);
+  scene.fog = new THREE.Fog(0x070b14, 16, 70);
 
-  const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 200);
+  const camera = new THREE.PerspectiveCamera(74, window.innerWidth / window.innerHeight, 0.1, 200);
   camera.position.set(0, 1.7, 6);
 
   const hemi = new THREE.HemisphereLight(0x9fc0e8, 0x0b1220, 1.15);
   scene.add(hemi);
   const ambient = new THREE.AmbientLight(0xaebfd4, 0.75);
   scene.add(ambient);
-  const key = new THREE.DirectionalLight(0xdce8ff, 1.35);
+  const key = new THREE.DirectionalLight(0xdce8ff, 1.3);
   key.position.set(6, 12, 6);
   key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
   key.shadow.camera.near = 1;
-  key.shadow.camera.far = 60;
-  key.shadow.camera.left = -20;
-  key.shadow.camera.right = 20;
-  key.shadow.camera.top = 20;
-  key.shadow.camera.bottom = -20;
+  key.shadow.camera.far = 80;
+  key.shadow.camera.left = -22;
+  key.shadow.camera.right = 22;
+  key.shadow.camera.top = 22;
+  key.shadow.camera.bottom = -22;
   scene.add(key);
 
   const interactables: Interactable[] = [];
@@ -81,10 +86,11 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
   const matWallAccent = track(new THREE.MeshStandardMaterial({ color: 0x35496a, roughness: 0.8, metalness: 0.12 }));
   const matFloor = track(new THREE.MeshStandardMaterial({ color: 0x18233a, roughness: 0.65, metalness: 0.3 }));
   const matCeil = track(new THREE.MeshStandardMaterial({ color: 0x0e1524, roughness: 1 }));
-  const matDoor = track(new THREE.MeshStandardMaterial({ color: 0x2dd4bf, emissive: 0x0f766e, emissiveIntensity: 0.6, roughness: 0.4, metalness: 0.6 }));
+  const matDoor = track(new THREE.MeshStandardMaterial({ color: 0x2dd4bf, emissive: 0x0f766e, emissiveIntensity: 0.7, roughness: 0.4, metalness: 0.6 }));
   const matDoorLocked = track(new THREE.MeshStandardMaterial({ color: 0x94a3b8, emissive: 0x334155, emissiveIntensity: 0.35, roughness: 0.6, metalness: 0.5 }));
   const matBase = track(new THREE.MeshStandardMaterial({ color: 0x1b2740, roughness: 0.5, metalness: 0.7 }));
   const matScreen = track(new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+  const matExit = track(new THREE.MeshBasicMaterial({ color: 0x34d399 }));
 
   const boxGeo = track(new THREE.BoxGeometry(1, 1, 1));
 
@@ -112,93 +118,91 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
     const g = new THREE.Group();
     const accent = index % 2 === 0 ? matWall : matWallAccent;
 
-    // Sol / plafond
+    // Sol / plafond (la salle couvre toute sa profondeur, salles mitoyennes)
     addBox(g, matFloor, ROOM_W, 0.4, ROOM_D, 0, -0.2, 0, false);
     addBox(g, matCeil, ROOM_W, 0.3, ROOM_D, 0, ROOM_H + 0.15, 0, false);
 
-    // Murs latéraux
+    // Murs latéraux continus
     addBox(g, accent, WALL, ROOM_H, ROOM_D, -ROOM_W / 2, ROOM_H / 2, 0);
     addBox(g, accent, WALL, ROOM_H, ROOM_D, ROOM_W / 2, ROOM_H / 2, 0);
 
-    // Mur d'entrée (derrière)
-    addBox(g, accent, ROOM_W, ROOM_H, WALL, 0, ROOM_H / 2, ROOM_D / 2);
-
-    // Mur front avant, avec ouverture au centre
+    // Mur avant percé d'une ouverture de 5 de large (la porte)
     const side = (ROOM_W - 5) / 2;
     addBox(g, accent, side, ROOM_H, WALL, -(5 / 2 + side / 2), ROOM_H / 2, -ROOM_D / 2);
     addBox(g, accent, side, ROOM_H, WALL, 5 / 2 + side / 2, ROOM_H / 2, -ROOM_D / 2);
     addBox(g, accent, 5, ROOM_H - 4.2, WALL, 0, ROOM_H - (ROOM_H - 4.2) / 2, -ROOM_D / 2);
 
-    // Bandeaux lumineux au plafond
-    const neon = track(
-      new THREE.MeshBasicMaterial({ color: index % 2 === 0 ? 0x38bdf8 : 0x34d399 }),
-    );
+    // Bandeaux lumineux
+    const neon = track(new THREE.MeshBasicMaterial({ color: index % 2 === 0 ? 0x38bdf8 : 0x34d399 }));
     addBox(g, neon, 6, 0.12, 0.4, 0, ROOM_H - 0.2, 2, false);
-    addBox(g, neon, 6, 0.12, 0.4, 0, ROOM_H - 0.2, -4, false);
+    addBox(g, neon, 6, 0.12, 0.4, 0, ROOM_H - 0.2, -5, false);
 
-    // Terminal (pupitre + écran)
-    const base = addBox(g, matBase, 1.2, 1.1, 1.0, 0, 0.55, 0);
-    base.name = "terminal-base";
+    // Terminal
+    addBox(g, matBase, 1.2, 1.1, 1.0, 0, 0.55, 0);
     const head = new THREE.Mesh(boxGeo, matScreen);
     head.scale.set(1.15, 0.85, 0.14);
     head.position.set(0, 1.6, -0.25);
     head.rotation.x = -0.28;
     head.castShadow = true;
     g.add(head);
-    const glow = new THREE.PointLight(index % 2 === 0 ? 0x38bdf8 : 0x34d399, 6, 8, 2);
+    const glow = new THREE.PointLight(index % 2 === 0 ? 0x38bdf8 : 0x34d399, 6, 9, 2);
     glow.position.set(0, 2, -0.5);
     g.add(glow);
-
-    // Panneau titre flottant
-    const plate = addBox(g, matWallAccent, 6, 1.4, 0.2, 0, ROOM_H - 1.1, -ROOM_D / 2 + 0.4, false);
-    plate.visible = true;
 
     scene.add(g);
     return g;
   }
 
-  // Construction des salles en ligne sur l'axe Z (négatif = plus loin)
-  let zCursor = 0;
-  const doorSpacing = ROOM_D + GAP;
+  // Salles mitoyennes alignées sur -Z : plus d'interstice où l'on puisse sortir.
   for (let i = 0; i < LEVELS.length; i++) {
     const g = buildRoom(i);
-    const cz = zCursor;
+    const cz = -i * ROOM_D;
     g.position.set(0, 0, cz);
     roomCenters.push(new THREE.Vector3(0, 1.7, cz));
+
     interactables.push({
       kind: "terminal",
       levelIndex: i,
       position: new THREE.Vector3(0, 1.7, cz),
-      radius: 2.6,
+      radius: 3.0,
       locked: false,
     });
 
-    // Porte dans l'ouverture du mur avant
+    // Porte dans l'ouverture du mur avant.
+    const doorZ = cz - ROOM_D / 2;
     const doorGroup = new THREE.Group();
-    doorGroup.position.set(0, 0, cz - ROOM_D / 2);
+    doorGroup.position.set(0, 0, doorZ);
     const panel = new THREE.Mesh(boxGeo, matDoorLocked);
     panel.scale.set(4.6, 4.0, 0.3);
     panel.position.set(0, 2.1, 0);
     panel.castShadow = true;
     doorGroup.add(panel);
     scene.add(doorGroup);
-    doors.push({ group: doorGroup, panel, open: false, targetOpen: 0, z: cz - ROOM_D / 2 });
+    doors.push({ group: doorGroup, panel, open: false, targetOpen: 0, z: doorZ });
 
     interactables.push({
       kind: "door",
       levelIndex: i,
-      position: new THREE.Vector3(0, 1.7, cz - ROOM_D / 2 - 0.5),
-      radius: 3.2,
+      position: new THREE.Vector3(0, 1.7, doorZ - 0.5),
+      radius: 3.4,
       locked: true,
     });
-
-    zCursor -= doorSpacing;
   }
 
-  // Sol du couloir reliant les salles
-  const corridorLen = Math.abs(zCursor) + ROOM_D;
-  const corridor = addBox(scene, matFloor, 5, 0.4, corridorLen, 0, -0.2, zCursor / 2 + ROOM_D / 4, false);
-  corridor.receiveShadow = true;
+  // Mur de fond de la première salle (l'entrée du labo).
+  addBox(scene, matWallAccent, ROOM_W, ROOM_H, WALL, 0, ROOM_H / 2, ROOM_D / 2);
+
+  // Sas de sortie derrière la dernière porte.
+  const exitStartZ = doors[doors.length - 1]!.z;
+  const exitCenterZ = exitStartZ - EXIT_DEPTH / 2;
+  addBox(scene, matFloor, 5, 0.4, EXIT_DEPTH, 0, -0.2, exitCenterZ, false);
+  addBox(scene, matCeil, 5, 0.3, EXIT_DEPTH, 0, ROOM_H + 0.15, exitCenterZ, false);
+  addBox(scene, matWallAccent, WALL, ROOM_H, EXIT_DEPTH, -2.5, ROOM_H / 2, exitCenterZ);
+  addBox(scene, matWallAccent, WALL, ROOM_H, EXIT_DEPTH, 2.5, ROOM_H / 2, exitCenterZ);
+  addBox(scene, matExit, 4, 3, 0.2, 0, 3, exitStartZ - EXIT_DEPTH + 0.3, false);
+  const exitLight = new THREE.PointLight(0x34d399, 8, 14, 2);
+  exitLight.position.set(0, 3, exitStartZ - EXIT_DEPTH + 1.5);
+  scene.add(exitLight);
 
   // --- Contrôles caméra (FPS) ---
   const keys = new Set<string>();
@@ -243,7 +247,7 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
       const toward = it.position.clone().sub(camera.position);
       const dist = toward.length();
       if (dist > it.radius + 1.5 || dist < 0.001) continue;
-      if (toward.normalize().dot(dir) < 0.5) continue;
+      if (toward.normalize().dot(dir) < 0.45) continue;
       if (dist < bestD) {
         bestD = dist;
         best = it;
@@ -257,7 +261,7 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
       const p = canvas.requestPointerLock() as unknown as Promise<void> | undefined;
       if (p && typeof p.catch === "function") p.catch(() => undefined);
     } catch {
-      // pointer lock indisponible : le jeu reste jouable au clic suivant.
+      /* pointer lock indisponible : le clic suivant réessaiera. */
     }
   };
 
@@ -276,29 +280,35 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
     renderer.setSize(window.innerWidth, window.innerHeight);
   };
 
+  // Bornes : intérieur des salles (large) puis sas de sortie (étroit).
+  const frontZ = roomCenters[0]!.z + ROOM_D / 2 - PLAYER_MARGIN;
+  const exitEndZ = exitStartZ - EXIT_DEPTH + PLAYER_MARGIN;
+  const roomCenterZs = roomCenters.map((c) => c.z);
+
   function collide(next: THREE.Vector3): THREE.Vector3 {
-    // Empêche de traverser les murs latéraux et de sortir par les extrémités.
-    const halfW = ROOM_W / 2 - 0.6;
-    next.x = Math.max(-halfW, Math.min(halfW, next.x));
-    // Limite avant / arrière globale
-    const front = roomCenters[0]!.z + ROOM_D / 2 - 0.7;
-    const back = roomCenters[roomCenters.length - 1]!.z - ROOM_D / 2 + 0.7;
-    next.z = Math.max(back, Math.min(front, next.z));
-    // Portes verrouillées : bloque le passage à travers le plan de la porte.
-    for (const d of doors) {
-      if (d.open) continue;
-      const from = camera.position.z;
-      const to = next.z;
-      const r = 0.75;
-      if (from > d.z + r && to <= d.z + r) next.z = d.z + r;
-      if (from < d.z - r && to >= d.z - r) next.z = d.z - r;
-    }
+    const r = resolveCollision({
+      x: next.x,
+      z: next.z,
+      prevZ: camera.position.z,
+      roomCenterZs,
+      frontZ,
+      exitStartZ,
+      exitEndZ,
+      halfWidth: ROOM_W / 2 - PLAYER_MARGIN,
+      exitHalfWidth: 2.5 - PLAYER_MARGIN,
+      terminalHalf: TERMINAL_HALF,
+      doorOpenHalf: DOOR_OPEN_HALF,
+      wallBand: WALL_BAND,
+      doors: doors.map((d) => ({ z: d.z, open: d.open })),
+    });
+    next.x = r.x;
+    next.z = r.z;
+    next.y = 1.7;
     return next;
   }
 
   function updateTransform() {
-    const euler = new THREE.Euler(pitch, yaw, 0, "YXZ");
-    camera.quaternion.setFromEuler(euler);
+    camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, "YXZ"));
   }
 
   function tick() {
@@ -324,15 +334,12 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
     velocity.lerp(move, 0.15);
     const next = camera.position.clone().addScaledVector(velocity, clock.dt);
     collide(next);
-    next.y = 1.7;
     camera.position.copy(next);
 
     updateTransform();
 
-    // Animation des portes
     for (const d of doors) {
-      const y = THREE.MathUtils.damp(d.group.position.y, d.targetOpen, 4, clock.dt);
-      d.group.position.y = y;
+      d.group.position.y = THREE.MathUtils.damp(d.group.position.y, d.targetOpen, 4, clock.dt);
       d.open = d.targetOpen > 2;
     }
 
@@ -373,10 +380,11 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
   function teleportToRoom(levelIndex: number) {
     const c = roomCenters[levelIndex];
     if (!c) return;
-    camera.position.set(c.x, 1.7, c.z + 6);
+    camera.position.set(0, 1.7, c.z + 6);
     yaw = 0;
     pitch = 0;
     updateTransform();
+    velocity.set(0, 0, 0);
   }
 
   function dispose() {

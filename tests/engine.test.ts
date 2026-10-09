@@ -10,18 +10,20 @@ import {
   totalScore,
   WRONG_ATTEMPT_PENALTY,
 } from "../src/game/engine";
-import { LEVELS, getLevel, totalBasePoints } from "../src/game/levels";
+import { LEVELS, getLevel, totalBasePoints, type Level } from "../src/game/levels";
 import { highlightSolidity, escapeHtml } from "../src/game/highlight";
 
 describe("levels", () => {
-  it("expose 5 salles indexées de 0 à 4", () => {
-    expect(LEVELS).toHaveLength(5);
+  it("expose 3 salles indexées de 0 à 2", () => {
+    expect(LEVELS).toHaveLength(3);
     LEVELS.forEach((l, i) => expect(l.index).toBe(i));
   });
 
-  it("chaque niveau a 3 indices, un bug au moins et des lignes valides", () => {
+  it("chaque niveau a 3 indices, une mission, un bug et des lignes valides", () => {
     for (const l of LEVELS) {
       expect(l.hints).toHaveLength(3);
+      expect(l.mission.length).toBeGreaterThan(10);
+      expect(l.description.length).toBeGreaterThan(10);
       expect(l.code.length).toBeGreaterThan(5);
       expect(l.bugLines.length).toBeGreaterThanOrEqual(1);
       for (const b of l.bugLines) {
@@ -37,8 +39,14 @@ describe("levels", () => {
     }
   });
 
+  it("les identifiants sont uniques", () => {
+    const ids = LEVELS.map((l) => l.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
   it("getLevel retrouve par id et totalBasePoints = somme", () => {
     expect(getLevel("reentrancy")?.id).toBe("reentrancy");
+    expect(getLevel("access-control")?.id).toBe("access-control");
     expect(getLevel("inconnu")).toBeUndefined();
     expect(totalBasePoints()).toBe(LEVELS.reduce((s, l) => s + l.basePoints, 0));
   });
@@ -60,38 +68,40 @@ describe("normalizeSelection", () => {
 });
 
 describe("checkAttempt", () => {
-  const level = getLevel("access-control")!; // bugLines [12, 16]
+  const single = getLevel("access-control")!; // bugLines [19]
 
-  it("réussit uniquement si toutes les lignes buguées sont trouvées sans faux positif", () => {
-    expect(checkAttempt(level, [12, 16]).success).toBe(true);
-    expect(checkAttempt(level, [16, 12]).success).toBe(true);
-    expect(checkAttempt(level, [12]).success).toBe(false);
-    expect(checkAttempt(level, [12, 16, 3]).success).toBe(false);
-    expect(checkAttempt(level, []).success).toBe(false);
+  it("réussit uniquement si la bonne ligne est trouvée, sans faux positif", () => {
+    expect(checkAttempt(single, [19]).success).toBe(true);
+    expect(checkAttempt(single, [18]).success).toBe(false);
+    expect(checkAttempt(single, [19, 3]).success).toBe(false);
+    expect(checkAttempt(single, []).success).toBe(false);
   });
 
   it("rapporte corrects, faux positifs et manquants", () => {
-    const r = checkAttempt(level, [12, 99]);
-    expect(r.correctPicked).toEqual([12]);
-    expect(r.falsePositives).toEqual([]); // 99 hors bornes
-    expect(r.missing).toEqual([16]);
-    expect(r.found).toBe(1);
-    expect(r.total).toBe(2);
-
-    const r2 = checkAttempt(level, [3, 4]);
-    expect(r2.falsePositives).toEqual([3, 4]);
-    expect(r2.missing).toEqual([12, 16]);
+    const r = checkAttempt(single, [18]);
+    expect(r.found).toBe(0);
+    expect(r.total).toBe(1);
+    expect(r.falsePositives).toEqual([18]);
+    expect(r.missing).toEqual([19]);
   });
 
-  it("gère un niveau à une seule ligne", () => {
-    const one = getLevel("reentrancy")!;
-    expect(checkAttempt(one, [13]).success).toBe(true);
-    expect(checkAttempt(one, [14]).success).toBe(false);
+  it("gère un niveau à plusieurs bugs (synthétique)", () => {
+    const multi: Level = {
+      ...single,
+      code: Array.from({ length: 20 }, (_v, i) => `ligne ${i + 1}`),
+      bugLines: [3, 12],
+    };
+    expect(checkAttempt(multi, [3, 12]).success).toBe(true);
+    expect(checkAttempt(multi, [12, 3]).success).toBe(true);
+    const r = checkAttempt(multi, [3, 99]);
+    expect(r.correctPicked).toEqual([3]);
+    expect(r.falsePositives).toEqual([]); // 99 hors bornes
+    expect(r.missing).toEqual([12]);
   });
 });
 
 describe("scoreForLevel", () => {
-  const level = getLevel("access-control")!;
+  const level = getLevel("access-control")!; // basePoints 1000
 
   it("applique les pénalités d'indices puis les échecs", () => {
     expect(scoreForLevel(level, 0, 0)).toBe(level.basePoints);
@@ -113,7 +123,7 @@ describe("progress", () => {
     expect(isLevelSolved(p, "reentrancy")).toBe(false);
 
     for (const l of LEVELS) p.solved[l.id] = { hintsUsed: 0, wrongAttempts: 0, score: l.basePoints, timeMs: 1000 };
-    expect(solvedCount(p)).toBe(5);
+    expect(solvedCount(p)).toBe(3);
     expect(isGameComplete(p)).toBe(true);
     expect(totalScore(p)).toBe(totalBasePoints());
   });

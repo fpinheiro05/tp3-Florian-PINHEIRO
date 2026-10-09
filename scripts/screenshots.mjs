@@ -111,7 +111,7 @@ async function renderHarnessCard(browser) {
         ])}
         ${card("MCP & Filet & CI", [
           "<b>MCP level-guard</b> — outil <b>check_levels</b> (stdio, sans dépendance)",
-          "ESLint · TypeScript strict · 15 tests Vitest · build Vite",
+          "ESLint · TypeScript strict · 28 tests Vitest · build Vite",
           "GitHub Actions : lint · types · tests · build à chaque push",
         ])}
       </div>
@@ -163,15 +163,20 @@ async function main() {
     window.__escape?.hint();
     window.__escape?.hint();
   });
-  await sleep(600);
+  await sleep(400);
+  await page.evaluate(() => {
+    const panel = document.querySelector("#ov-puzzle .panel");
+    if (panel) panel.scrollTop = panel.scrollHeight;
+  });
+  await sleep(300);
   await page.screenshot({ path: join(OUT, "04-salle1-indices.png") });
   console.log("✓ 04-salle1-indices.png");
 
-  // Salle difficile + victoire.
-  await page.evaluate(() => window.__escape?.openLevel(4));
+  // Dernière salle (réentrance) + victoire.
+  await page.evaluate(() => window.__escape?.openLevel(2));
   await sleep(500);
-  await page.screenshot({ path: join(OUT, "05-salle5-delegatecall.png") });
-  console.log("✓ 05-salle5-delegatecall.png");
+  await page.screenshot({ path: join(OUT, "05-salle3-reentrance.png") });
+  console.log("✓ 05-salle3-reentrance.png");
 
   await page.evaluate(() => window.__escape?.solveAll());
   await sleep(800);
