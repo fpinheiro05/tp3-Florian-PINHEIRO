@@ -72,7 +72,8 @@ src/
     └── audio.ts         # effets sonores WebAudio (sans assets)
 tests/
 ├── engine.test.ts       # 16 tests sur les règles et la coloration
-└── collision.test.ts    # 12 tests sur les collisions (murs, portes, pupitres)
+├── collision.test.ts    # 12 tests sur les collisions (murs, portes, pupitres)
+└── ui.test.ts           # 6 tests sur la sélection des lignes (régression)
 ```
 
 Le **moteur (`engine.ts`) est pur** (aucun DOM, aucun Three.js) et **ne lève jamais** :
@@ -116,7 +117,7 @@ npm run verify   # lint + typecheck + tests + build
 ```
 
 - **TypeScript strict** (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`…)
-- **28 tests unitaires** sur les règles de jeu, la coloration et les collisions
+- **34 tests unitaires** sur les règles de jeu, la coloration, les collisions et l'interface
 - **ESLint** sans warning
 - Build Vite ~130 ko gzip
 

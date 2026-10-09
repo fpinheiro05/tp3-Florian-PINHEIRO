@@ -4,9 +4,11 @@
 | --- | --- |
 | `01-titre.png` | Écran titre et commandes |
 | `02-labo-hud.png` | Vue 3D du labo + HUD (score, salles) |
-| `03-salle1-audit.png` | Panneau d'audit du contrat `Vault` (coloration Solidity) |
+| `03-salle1-audit.png` | Panneau d'audit du contrat `LabToken` (coloration Solidity) |
 | `04-salle1-indices.png` | Les 3 indices affichés, dont la réponse (−500 pts) |
 | `05-salle3-reentrance.png` | Dernière salle : `Vault` (réentrance) |
+| `05b-ligne-selectionnee.png` | Clic sur la ligne buguée : sélection + bouton « Valider » actif |
+| `05c-audit-valide.png` | Audit réussi : ligne verte, porte déverrouillée |
 | `06-filet-verify.png` | `npm run verify` — lint · types · tests · build |
 | `07-victoire.png` | Écran de victoire et détail du score |
 | `08-harness.png` | Carte du harness (agents, droits, hooks, MCP, CI) |

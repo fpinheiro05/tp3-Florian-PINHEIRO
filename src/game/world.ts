@@ -71,6 +71,7 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
   key.shadow.camera.top = 22;
   key.shadow.camera.bottom = -22;
   scene.add(key);
+  scene.add(key.target);
 
   const interactables: Interactable[] = [];
   const doors: DoorRef[] = [];
@@ -217,7 +218,7 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
 
   const onKeyDown = (e: KeyboardEvent) => {
     keys.add(e.code);
-    if (e.code === "KeyE" && locked) {
+    if (e.code === "KeyE" && locked && !e.repeat) {
       const target = pickFocus();
       if (target) cb.onInteract(target);
     }
@@ -316,6 +317,8 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
     const now = performance.now();
     clock.dt = Math.min(0.05, (now - last) / 1000);
     last = now;
+    key.position.set(6, 12, camera.position.z + 6);
+    key.target.position.set(0, 0, camera.position.z);
 
     const dir = new THREE.Vector3();
     camera.getWorldDirection(dir);
@@ -331,7 +334,7 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
     if (keys.has("KeyA") || keys.has("ArrowLeft")) move.sub(right);
     if (move.lengthSq() > 0) move.normalize().multiplyScalar(speed);
 
-    velocity.lerp(move, 0.15);
+    velocity.lerp(move, 1 - Math.exp(-10 * clock.dt));
     const next = camera.position.clone().addScaledVector(velocity, clock.dt);
     collide(next);
     camera.position.copy(next);
@@ -340,7 +343,7 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
 
     for (const d of doors) {
       d.group.position.y = THREE.MathUtils.damp(d.group.position.y, d.targetOpen, 4, clock.dt);
-      d.open = d.targetOpen > 2;
+      d.open = d.group.position.y < -2;
     }
 
     renderer.render(scene, camera);
@@ -362,6 +365,8 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
   function stop() {
     running = false;
     cancelAnimationFrame(raf);
+    keys.clear();
+    velocity.set(0, 0, 0);
     window.removeEventListener("keydown", onKeyDown);
     window.removeEventListener("keyup", onKeyUp);
     document.removeEventListener("mousemove", onMouseMove);
@@ -373,6 +378,8 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
   function setDoorOpen(levelIndex: number, open: boolean) {
     const d = doors[levelIndex];
     if (!d) return;
+    const it = interactables.find((x) => x.kind === "door" && x.levelIndex === levelIndex);
+    if (it) it.locked = !open;
     d.targetOpen = open ? -5.2 : 0;
     d.panel.material = open ? matDoor : matDoorLocked;
   }

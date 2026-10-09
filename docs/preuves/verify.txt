@@ -17,13 +17,14 @@
 
  RUN  v2.1.9 C:/Users/flori/OneDrive/Documents/Travaux/tp3-Florian-PINHEIRO
 
-  tests/collision.test.ts (12 tests) 9ms
-  tests/engine.test.ts (16 tests) 13ms
+  tests/collision.test.ts (12 tests) 6ms
+  tests/engine.test.ts (16 tests) 9ms
+  tests/ui.test.ts (6 tests) 166ms
 
- Test Files  2 passed (2)
-      Tests  28 passed (28)
-   Start at  12:31:00
-   Duration  1.99s (transform 148ms, setup 0ms, collect 278ms, tests 22ms, environment 2.34s, prepare 464ms)
+ Test Files  3 passed (3)
+      Tests  34 passed (34)
+   Start at  13:19:11
+   Duration  1.40s (transform 129ms, setup 0ms, collect 226ms, tests 181ms, environment 2.24s, prepare 405ms)
 
 
 > solidity-escape-3d@1.0.0 build
@@ -36,6 +37,6 @@ rendering chunks...
 computing gzip size...
 dist/index.html                   0.56 kB ö gzip:   0.36 kB
 dist/assets/index-BDnBFg9R.css    7.74 kB ö gzip:   2.41 kB
-dist/assets/index-xfNZ1oDU.js   499.79 kB ö gzip: 129.58 kB
- built in 1.53s
+dist/assets/index-2-_g3nYo.js   500.04 kB ö gzip: 129.69 kB
+ built in 894ms
 

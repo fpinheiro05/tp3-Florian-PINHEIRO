@@ -295,12 +295,15 @@ export class Ui {
   }
 
   private toggleLine(n: number): void {
-    if (this.byId("pz-submit").hasAttribute("disabled")) return;
+    // On ne modifie plus une salle déjà validée.
+    if (this.puzzleSolved) return;
     if (this.selection.has(n)) this.selection.delete(n);
     else this.selection.add(n);
     const row = this.codeEl.querySelector(`.code-line[data-line="${n}"]`);
     row?.classList.toggle("selected", this.selection.has(n));
     this.updateSelectionCount();
+    // Met à jour l'état du bouton « Valider » selon la sélection.
+    this.syncControls();
   }
 
   private updateSelectionCount(): void {

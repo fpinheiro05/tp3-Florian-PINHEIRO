@@ -1,4 +1,4 @@
-import { LEVELS, type Level } from "./levels";
+import { LEVELS, MAX_HINTS, type Level } from "./levels";
 
 /** Pénalités fixes par indice demandé (indice 3 = réponse, très pénalisé). */
 export const HINT_PENALTIES = [150, 250, 500] as const;
@@ -30,7 +30,12 @@ export function normalizeSelection(input: unknown, codeLength: number): number[]
   const safeLen = Number.isFinite(codeLength) && codeLength > 0 ? Math.floor(codeLength) : 0;
   const set = new Set<number>();
   for (const raw of input) {
-    const n = typeof raw === "string" && raw.trim() !== "" ? Number(raw) : (raw as number);
+    const n =
+      typeof raw === "string" && raw.trim() !== ""
+        ? Number(raw)
+        : typeof raw === "number"
+          ? raw
+          : NaN;
     if (!Number.isInteger(n)) continue;
     if (n < 1 || n > safeLen) continue;
     set.add(n);
@@ -56,9 +61,9 @@ export function checkAttempt(level: Level, selection: unknown): AttemptResult {
   };
 }
 
-/** Score d'un niveau : base − pénalités indices − 50€/échec, plancher 100 si réussi. */
+/** Score d'un niveau : base − pénalités indices − 50 pts/échec, plancher 100 si réussi. */
 export function scoreForLevel(level: Level, hintsUsed: number, wrongAttempts: number): number {
-  const h = Math.max(0, Math.min(3, Math.floor(hintsUsed) || 0));
+  const h = Math.max(0, Math.min(MAX_HINTS, Math.floor(hintsUsed) || 0));
   const w = Math.max(0, Math.floor(wrongAttempts) || 0);
   let penalty = 0;
   for (let i = 0; i < h; i++) penalty += HINT_PENALTIES[i] ?? 0;
@@ -108,7 +113,7 @@ export function loadProgress(): GameProgress {
         solved[level.id] = {
           hintsUsed: Math.max(0, Math.min(3, Math.floor(Number(e["hintsUsed"]) || 0))),
           wrongAttempts: Math.max(0, Math.min(MAX_WRONG_DISPLAY, Math.floor(Number(e["wrongAttempts"]) || 0))),
-          score: Math.max(0, Math.floor(Number(e["score"]) || 0)),
+          score: Math.min(level.basePoints, Math.max(0, Math.floor(Number(e["score"]) || 0))),
           timeMs: Math.max(0, Math.floor(Number(e["timeMs"]) || 0)),
         };
       }

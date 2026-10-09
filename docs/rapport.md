@@ -74,7 +74,7 @@ Voir la capture `docs/screenshots/08-harness.png`. Tout est dans le dépôt :
   `null`, `localStorage` corrompu. Il ne lève jamais.
 - Score plancher à 100, pénalités d'indices plafonnées, progression réparable.
 - TypeScript **strict** (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`), zéro `any`.
-- **28 tests Vitest** + lint + build, en local et en **CI GitHub Actions** (`npm run verify`).
+- **34 tests Vitest** + lint + build, en local et en **CI GitHub Actions** (`npm run verify`).
 
 ## 7. Lancer
 
