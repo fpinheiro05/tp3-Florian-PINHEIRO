@@ -163,7 +163,14 @@ function main(): void {
 
   function closePuzzle(): void {
     ui.closePuzzle();
-    if (state.running) canvas.requestPointerLock();
+    if (state.running) {
+      try {
+        const p = canvas.requestPointerLock() as unknown as Promise<void> | undefined;
+        if (p && typeof p.catch === "function") p.catch(() => undefined);
+      } catch {
+        /* ignore */
+      }
+    }
     refreshHud();
   }
 

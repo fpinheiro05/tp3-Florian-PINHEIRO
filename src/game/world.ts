@@ -252,9 +252,18 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
     return best;
   };
 
+  const requestLock = (): void => {
+    try {
+      const p = canvas.requestPointerLock() as unknown as Promise<void> | undefined;
+      if (p && typeof p.catch === "function") p.catch(() => undefined);
+    } catch {
+      // pointer lock indisponible : le jeu reste jouable au clic suivant.
+    }
+  };
+
   const onClick = () => {
     if (!locked) {
-      canvas.requestPointerLock();
+      requestLock();
       return;
     }
     const target = pickFocus();
