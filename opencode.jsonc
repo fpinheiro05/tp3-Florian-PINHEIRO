@@ -18,7 +18,11 @@
     { "action": "shell", "resource": "git status *", "effect": "allow" },
     { "action": "shell", "resource": "git diff *", "effect": "allow" },
     { "action": "shell", "resource": "git log *", "effect": "allow" },
-    { "action": "shell", "resource": "git push *", "effect": "deny" },
+    { "action": "shell", "resource": "gh auth status *", "effect": "allow" },
+    { "action": "shell", "resource": "gh repo view *", "effect": "allow" },
+    { "action": "shell", "resource": "git push *", "effect": "ask" },
+    { "action": "shell", "resource": "gh *", "effect": "ask" },
+    { "action": "shell", "resource": "winget *", "effect": "ask" },
     { "action": "shell", "resource": "git reset --hard *", "effect": "deny" },
     { "action": "shell", "resource": "rm -rf *", "effect": "deny" }
   ],
