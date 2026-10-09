@@ -76,7 +76,37 @@ Le **moteur (`engine.ts`) est pur** (aucun DOM, aucun Three.js) et **ne lève ja
 il normalise toute entrée, y compris corrompue, ce qui le rend directement testable
 et robuste (exigence de qualité demandée au TP).
 
+## 🤖 Harness OpenCode (TP3)
+
+Le projet se construit **avec** la chaîne, pas à côté. Tout est dans le dépôt :
+
+| Brique | Emplacement | Rôle |
+| --- | --- | --- |
+| Rules | `AGENTS.md` | 6 invariants + Definition of Done |
+| Agent principal | `.opencode/agents/game-engineer.md` | développe les fonctionnalités |
+| Subagents | `solidity-auditor`, `test-engineer`, `release-verifier` | droits stricts par tâche |
+| Commands | `.opencode/commands/` | `/new-level`, `/verify`, `/level-check` |
+| Skill | `.opencode/skills/solidity-audit/` | catalogue de vulnérabilités + format `Level` |
+| Hook (plugin) | `.opencode/plugins/harness-guard/` | réinjecte les invariants, outil `game_verify_gate` |
+| MCP | `mcp/level-guard.mjs` | outil `check_levels` (valide les données de jeu) |
+| Droits | `opencode.jsonc` | lecture libre, shell sur accord, `git push`/`rm -rf` interdits |
+| CI | `.github/workflows/ci.yml` | lint · types · tests · build à chaque push |
+
+```bash
+npm run verify   # le filet : lint + typecheck + tests + build
+```
+
+## 📸 Captures
+
+Dans `docs/screenshots/` (preuves) : titre, labo 3D, audit d'une salle, les 3 indices, victoire,
+le filet qui tourne et la carte du harness. Rapport complet dans `docs/rapport.md`.
+
+```bash
+npm run build && npm run screenshots
+```
+
 ## ✅ Qualité
+
 
 ```bash
 npm run verify   # lint + typecheck + tests + build

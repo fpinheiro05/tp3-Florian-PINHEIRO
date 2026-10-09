@@ -230,6 +230,31 @@ function main(): void {
     if (isLevelSolved(state.progress, l.id)) world.setDoorOpen(i, true);
   });
 
+  // API de débogage (démonstration et captures) — activée par ?debug=1.
+  if (new URLSearchParams(window.location.search).has("debug")) {
+    (window as unknown as { __escape?: unknown }).__escape = {
+      openLevel: (i: number) => {
+        const l = LEVELS[i];
+        if (l) openLevel(l);
+      },
+      hint: () => useHint(),
+      close: () => closePuzzle(),
+      start: () => {
+        ui.hideTitle();
+        startGame();
+      },
+      solveAll: () => {
+        for (const l of LEVELS) {
+          state.currentLevel = l;
+          state.hintsUsedThisLevel = 0;
+          state.wrongThisLevel = 0;
+          onAuditSubmit([...l.bugLines]);
+        }
+      },
+      state: () => state.progress,
+    };
+  }
+
   // Suivi du focus pour le prompt d'interaction.
   window.setInterval(() => {
     if (!state.running || ui.isPuzzleOpen()) {

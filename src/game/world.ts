@@ -45,14 +45,27 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x05070d);
-  scene.fog = new THREE.Fog(0x05070d, 8, 46);
+  scene.background = new THREE.Color(0x070b14);
+  scene.fog = new THREE.Fog(0x070b14, 14, 64);
 
   const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 200);
   camera.position.set(0, 1.7, 6);
 
-  const ambient = new THREE.AmbientLight(0x8899aa, 0.55);
+  const hemi = new THREE.HemisphereLight(0x9fc0e8, 0x0b1220, 1.15);
+  scene.add(hemi);
+  const ambient = new THREE.AmbientLight(0xaebfd4, 0.75);
   scene.add(ambient);
+  const key = new THREE.DirectionalLight(0xdce8ff, 1.35);
+  key.position.set(6, 12, 6);
+  key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.camera.near = 1;
+  key.shadow.camera.far = 60;
+  key.shadow.camera.left = -20;
+  key.shadow.camera.right = 20;
+  key.shadow.camera.top = 20;
+  key.shadow.camera.bottom = -20;
+  scene.add(key);
 
   const interactables: Interactable[] = [];
   const doors: DoorRef[] = [];
@@ -64,14 +77,14 @@ export function createWorld(canvas: HTMLCanvasElement, cb: WorldCallbacks): Worl
     return x;
   };
 
-  const matWall = track(new THREE.MeshStandardMaterial({ color: 0x1b2436, roughness: 0.9, metalness: 0.05 }));
-  const matWallAccent = track(new THREE.MeshStandardMaterial({ color: 0x243044, roughness: 0.8, metalness: 0.1 }));
-  const matFloor = track(new THREE.MeshStandardMaterial({ color: 0x0c1220, roughness: 0.7, metalness: 0.25 }));
-  const matCeil = track(new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 1 }));
-  const matDoor = track(new THREE.MeshStandardMaterial({ color: 0x2dd4bf, emissive: 0x0f766e, emissiveIntensity: 0.5, roughness: 0.4, metalness: 0.6 }));
-  const matDoorLocked = track(new THREE.MeshStandardMaterial({ color: 0x64748b, emissive: 0x1e293b, emissiveIntensity: 0.3, roughness: 0.6, metalness: 0.5 }));
-  const matBase = track(new THREE.MeshStandardMaterial({ color: 0x111a2b, roughness: 0.5, metalness: 0.7 }));
-  const matScreen = track(new THREE.MeshBasicMaterial({ color: 0x0ea5e9 }));
+  const matWall = track(new THREE.MeshStandardMaterial({ color: 0x2c3c56, roughness: 0.9, metalness: 0.05 }));
+  const matWallAccent = track(new THREE.MeshStandardMaterial({ color: 0x35496a, roughness: 0.8, metalness: 0.12 }));
+  const matFloor = track(new THREE.MeshStandardMaterial({ color: 0x18233a, roughness: 0.65, metalness: 0.3 }));
+  const matCeil = track(new THREE.MeshStandardMaterial({ color: 0x0e1524, roughness: 1 }));
+  const matDoor = track(new THREE.MeshStandardMaterial({ color: 0x2dd4bf, emissive: 0x0f766e, emissiveIntensity: 0.6, roughness: 0.4, metalness: 0.6 }));
+  const matDoorLocked = track(new THREE.MeshStandardMaterial({ color: 0x94a3b8, emissive: 0x334155, emissiveIntensity: 0.35, roughness: 0.6, metalness: 0.5 }));
+  const matBase = track(new THREE.MeshStandardMaterial({ color: 0x1b2740, roughness: 0.5, metalness: 0.7 }));
+  const matScreen = track(new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
 
   const boxGeo = track(new THREE.BoxGeometry(1, 1, 1));
 
