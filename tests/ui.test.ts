@@ -30,15 +30,15 @@ function open(ui: Ui, level: Level, solved = false): void {
 }
 
 describe("Ui — sélection des lignes", () => {
-  const level = getLevel("zombie-factory")!; // bug ligne 15
+  const level = getLevel("zombie-factory")!; // bug ligne 3
 
   it("autorise le PREMIER clic sur une ligne (régression)", () => {
     const { ui, mount } = makeUi(level);
     open(ui, level);
-    const row = mount.querySelector('.code-line[data-line="15"]') as HTMLElement;
+    const row = mount.querySelector('.code-line[data-line="3"]') as HTMLElement;
     expect(row).toBeTruthy();
     row.click();
-    expect(ui.getSelection()).toEqual([15]);
+    expect(ui.getSelection()).toEqual([3]);
   });
 
   it("permet de valider après sélection (bouton réactivé)", () => {
@@ -46,14 +46,14 @@ describe("Ui — sélection des lignes", () => {
     open(ui, level);
     const submit = mount.querySelector("#pz-submit") as HTMLButtonElement;
     expect(submit.disabled).toBe(true);
-    (mount.querySelector('.code-line[data-line="15"]') as HTMLElement).click();
+    (mount.querySelector('.code-line[data-line="3"]') as HTMLElement).click();
     expect(submit.disabled).toBe(false);
   });
 
   it("un second clic désélectionne et re-désactive le bouton", () => {
     const { ui, mount } = makeUi(level);
     open(ui, level);
-    const row = mount.querySelector('.code-line[data-line="15"]') as HTMLElement;
+    const row = mount.querySelector('.code-line[data-line="3"]') as HTMLElement;
     row.click();
     row.click();
     expect(ui.getSelection()).toEqual([]);
@@ -63,29 +63,29 @@ describe("Ui — sélection des lignes", () => {
   it("gère plusieurs lignes dans l'ordre", () => {
     const { ui, mount } = makeUi(level);
     open(ui, level);
+    (mount.querySelector('.code-line[data-line="16"]') as HTMLElement).click();
     (mount.querySelector('.code-line[data-line="3"]') as HTMLElement).click();
-    (mount.querySelector('.code-line[data-line="15"]') as HTMLElement).click();
-    expect(ui.getSelection()).toEqual([3, 15]);
+    expect(ui.getSelection()).toEqual([3, 16]);
   });
 
   it("ne modifie plus la sélection d'une salle déjà validée", () => {
     const { ui, mount } = makeUi(level);
     ui.openPuzzle({
       level,
-      selection: [15],
+      selection: [3],
       hintsUsed: 0,
       wrongAttempts: 0,
       solved: true,
-      lastResult: checkAttempt(level, [15]),
+      lastResult: checkAttempt(level, [3]),
     });
-    (mount.querySelector('.code-line[data-line="3"]') as HTMLElement).click();
-    expect(ui.getSelection()).toEqual([15]);
+    (mount.querySelector('.code-line[data-line="16"]') as HTMLElement).click();
+    expect(ui.getSelection()).toEqual([3]);
   });
 
   it("efface la sélection", () => {
     const { ui, mount } = makeUi(level);
     open(ui, level);
-    (mount.querySelector('.code-line[data-line="15"]') as HTMLElement).click();
+    (mount.querySelector('.code-line[data-line="3"]') as HTMLElement).click();
     (mount.querySelector("#pz-clear") as HTMLButtonElement).click();
     expect(ui.getSelection()).toEqual([]);
   });

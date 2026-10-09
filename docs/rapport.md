@@ -17,19 +17,19 @@ Le projet croise trois domaines que je ne maîtrisais pas au départ et que la c
 accessibles :
 
 - **Trois.js / WebGL** : scène 3D, contrôles FPS, portes animées, terminaux interactifs, éclairage.
-- **Sécurité Solidity** : ADN non borné, `tx.origin`, réentrance.
+- **Solidity** : syntaxe invalide (compilation), `tx.origin`, réentrance.
 - **Moteur de jeu robuste** : entrées corrompues, score borné, pas d'exception.
 
 ## 3. Les trois salles
 
 | Salle | Contrat | Bug à trouver | Difficulté | Points |
 | --- | --- | --- | --- | --- |
-| 01 — Le Labo | `ZombieFactory` | ADN non borné (`dnaModulus` jamais utilisé) | Facile | 1000 |
+| 01 — Le Labo | `ZombieFactory` | Syntaxe : une ligne invalide empêche la compilation | Facile | 1000 |
 | 02 — Le Fantôme | `BadgeDoor` | Authentification `tx.origin` | Facile | 1000 |
 | 03 — Le Coffre | `Vault` | Réentrance (ordre des opérations) | Moyen | 1200 |
 
 Chaque salle est une **mini-leçon à la CryptoZombies** : une mission explicite (« trouve la ligne qui
-stocke l'ADN sans le réduire »), un contrat court et lisible, **un seul bug** à désigner, et une
+empêche le contrat de compiler »), un contrat court et lisible, **un seul bug** à désigner, et une
 progression de difficulté douce. Après l'audit, le joueur reçoit l'**explication** de la faille
 (DAO 2016…) et le **correctif** idiomatique.
 

@@ -29,15 +29,17 @@ export const LEVELS: Level[] = [
     id: "zombie-factory",
     index: 0,
     roomName: "Salle 01 — Le Labo",
-    title: "ADN de zombie",
-    vulnerability: "Logique (valeur non bornée)",
+    title: "Le clin d'œil de trop",
+    vulnerability: "Syntaxe (compilation)",
     difficulty: "Facile",
     mission:
-      "Trouve la ligne qui stocke l'ADN du zombie sans le réduire avec `dnaModulus`.",
+      "Trouve la ligne qui empêche le contrat de compiler : ce n'est pas du Solidity.",
     description:
-      "Un contrat inspiré de CryptoZombies. La variable `dnaModulus` définit la taille maximale d'un ADN… mais personne ne s'en sert. Repère où elle aurait dû intervenir.",
+      "Un débutant a laissé une note personnelle dans le fichier… mais Solidity ne comprend pas l'humour. Une ligne n'a rien à faire dans ce contrat.",
     code: [
       "pragma solidity >=0.5.0 <0.6.0;",
+      "",
+      "je suis un bug lol",
       "",
       "contract ZombieFactory {",
       "    uint dnaDigits = 16;",
@@ -55,17 +57,15 @@ export const LEVELS: Level[] = [
       "    }",
       "}",
     ],
-    bugLines: [15],
+    bugLines: [3],
     hints: [
-      "Indice 1 — Où regarder : la variable `dnaModulus` est déclarée ligne 5… mais est-elle utilisée quelque part dans le contrat ?",
-      "Indice 2 — Ce qui cloche : un ADN doit tenir sur `dnaDigits` chiffres (soit `10 ** 16`). Ici `_dna` est rangé tel quel, sans jamais être réduit.",
-      hint3(
-        "Ligne 15 : `zombies.push(Zombie(_name, _dna));` — il faut appliquer le modulo : `zombies.push(Zombie(_name, _dna % dnaModulus));`.",
-      ),
+      "Indice 1 — Où regarder : le contrat ne compile pas. Cherche la ligne qui n'est ni une instruction Solidity ni un commentaire.",
+      "Indice 2 — Ce qui cloche : la ligne 3 est une phrase en français, pas du code. Hors `pragma`, `import` et déclarations, Solidity ne tolère rien.",
+      hint3("Ligne 3 : `je suis un bug lol` doit être supprimée (ou commentée avec `//`)."),
     ],
     explanation:
-      "`dnaModulus` (10^16) sert à borner la taille de l'ADN. `createZombie` pousse `_dna` sans appliquer ce modulo : la valeur peut être arbitrairement grande et `dnaModulus` n'est jamais utilisé. C'est le bug classique de la leçon CryptoZombies (ADN non normalisé).",
-    fix: "Appliquer le modulo : `zombies.push(Zombie(_name, _dna % dnaModulus));`.",
+      "Un fichier Solidity ne peut contenir, au niveau supérieur, que `pragma`, `import` et des déclarations (`contract`, `interface`, `library`). La ligne `je suis un bug lol` est une instruction invalide : le compilateur échoue avec une erreur de syntaxe, donc le contrat ne se déploie jamais.",
+    fix: "Supprimer la ligne 3, ou la transformer en commentaire : `// je suis un bug lol`.",
     basePoints: 1000,
   },
   {

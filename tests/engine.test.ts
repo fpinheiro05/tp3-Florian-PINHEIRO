@@ -68,21 +68,21 @@ describe("normalizeSelection", () => {
 });
 
 describe("checkAttempt", () => {
-  const single = getLevel("zombie-factory")!; // bugLines [15]
+  const single = getLevel("zombie-factory")!; // bugLines [3]
 
   it("réussit uniquement si la bonne ligne est trouvée, sans faux positif", () => {
-    expect(checkAttempt(single, [15]).success).toBe(true);
-    expect(checkAttempt(single, [14]).success).toBe(false);
-    expect(checkAttempt(single, [15, 3]).success).toBe(false);
+    expect(checkAttempt(single, [3]).success).toBe(true);
+    expect(checkAttempt(single, [7]).success).toBe(false);
+    expect(checkAttempt(single, [3, 7]).success).toBe(false);
     expect(checkAttempt(single, []).success).toBe(false);
   });
 
   it("rapporte corrects, faux positifs et manquants", () => {
-    const r = checkAttempt(single, [14]);
+    const r = checkAttempt(single, [7]);
     expect(r.found).toBe(0);
     expect(r.total).toBe(1);
-    expect(r.falsePositives).toEqual([14]);
-    expect(r.missing).toEqual([15]);
+    expect(r.falsePositives).toEqual([7]);
+    expect(r.missing).toEqual([3]);
   });
 
   it("gère un niveau à plusieurs bugs (synthétique)", () => {
