@@ -64,7 +64,7 @@ src/
 ├── styles.css           # HUD, overlays, coloration
 └── game/
     ├── levels.ts        # les 3 contrats piégés + indices + explications
-    ├── engine.ts        # règles pures : sélection, check, score, sauvegarde
+    ├── engine.ts        # règles pures : sélection, vérification, score
     ├── collision.ts     # collisions pures : murs, portes, pupitres (testables)
     ├── highlight.ts     # coloration syntaxique Solidity maison
     ├── world.ts         # scène Three.js : salles, portes, terminaux, FPS

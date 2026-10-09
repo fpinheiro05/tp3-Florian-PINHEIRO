@@ -46,7 +46,7 @@ describe("levels", () => {
 
   it("getLevel retrouve par id et totalBasePoints = somme", () => {
     expect(getLevel("reentrancy")?.id).toBe("reentrancy");
-    expect(getLevel("access-control")?.id).toBe("access-control");
+    expect(getLevel("zombie-factory")?.id).toBe("zombie-factory");
     expect(getLevel("inconnu")).toBeUndefined();
     expect(totalBasePoints()).toBe(LEVELS.reduce((s, l) => s + l.basePoints, 0));
   });
@@ -68,21 +68,21 @@ describe("normalizeSelection", () => {
 });
 
 describe("checkAttempt", () => {
-  const single = getLevel("access-control")!; // bugLines [19]
+  const single = getLevel("zombie-factory")!; // bugLines [15]
 
   it("réussit uniquement si la bonne ligne est trouvée, sans faux positif", () => {
-    expect(checkAttempt(single, [19]).success).toBe(true);
-    expect(checkAttempt(single, [18]).success).toBe(false);
-    expect(checkAttempt(single, [19, 3]).success).toBe(false);
+    expect(checkAttempt(single, [15]).success).toBe(true);
+    expect(checkAttempt(single, [14]).success).toBe(false);
+    expect(checkAttempt(single, [15, 3]).success).toBe(false);
     expect(checkAttempt(single, []).success).toBe(false);
   });
 
   it("rapporte corrects, faux positifs et manquants", () => {
-    const r = checkAttempt(single, [18]);
+    const r = checkAttempt(single, [14]);
     expect(r.found).toBe(0);
     expect(r.total).toBe(1);
-    expect(r.falsePositives).toEqual([18]);
-    expect(r.missing).toEqual([19]);
+    expect(r.falsePositives).toEqual([14]);
+    expect(r.missing).toEqual([15]);
   });
 
   it("gère un niveau à plusieurs bugs (synthétique)", () => {
@@ -101,7 +101,7 @@ describe("checkAttempt", () => {
 });
 
 describe("scoreForLevel", () => {
-  const level = getLevel("access-control")!; // basePoints 1000
+  const level = getLevel("zombie-factory")!; // basePoints 1000
 
   it("applique les pénalités d'indices puis les échecs", () => {
     expect(scoreForLevel(level, 0, 0)).toBe(level.basePoints);

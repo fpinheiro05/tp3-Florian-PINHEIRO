@@ -2,11 +2,9 @@ import "./styles.css";
 import { LEVELS, type Level } from "./game/levels";
 import {
   checkAttempt,
-  clearProgress,
+  emptyProgress,
   isGameComplete,
   isLevelSolved,
-  loadProgress,
-  saveProgress,
   scoreForLevel,
   solvedCount,
   totalScore,
@@ -37,7 +35,7 @@ function main(): void {
   const sfx = new Sfx();
 
   const state: AppState = {
-    progress: loadProgress(),
+    progress: emptyProgress(),
     currentLevel: LEVELS[0]!,
     hintsUsedThisLevel: 0,
     wrongThisLevel: 0,
@@ -108,7 +106,6 @@ function main(): void {
           score,
           timeMs: Date.now() - state.progress.startedAt,
         };
-        saveProgress(state.progress);
         world.setDoorOpen(level.index, true);
         sfx.success();
         ui.toast(`Porte déverrouillée ! +${score} pts`, "ok");
@@ -189,7 +186,7 @@ function main(): void {
   }
 
   function restart(): void {
-    state.progress = clearProgress();
+    state.progress = emptyProgress();
     state.currentLevel = LEVELS[0]!;
     state.hintsUsedThisLevel = 0;
     state.wrongThisLevel = 0;
@@ -197,6 +194,7 @@ function main(): void {
     LEVELS.forEach((_lvl, i) => world.setDoorOpen(i, false));
     world.teleportToRoom(0);
     ui.hideTitle();
+    ui.closeWin();
     ui.closePuzzle();
     refreshHud();
     startGame();
@@ -230,11 +228,6 @@ function main(): void {
       if (!state.running) return;
       ui.setPauseVisible(!locked && !ui.isPuzzleOpen());
     },
-  });
-
-  // Restaure les portes des salles déjà résolues.
-  LEVELS.forEach((l, i) => {
-    if (isLevelSolved(state.progress, l.id)) world.setDoorOpen(i, true);
   });
 
   // API de débogage (démonstration et captures) — activée par ?debug=1.

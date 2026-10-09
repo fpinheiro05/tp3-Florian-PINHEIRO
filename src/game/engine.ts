@@ -3,7 +3,6 @@ import { LEVELS, MAX_HINTS, type Level } from "./levels";
 /** Pénalités fixes par indice demandé (indice 3 = réponse, très pénalisé). */
 export const HINT_PENALTIES = [150, 250, 500] as const;
 export const WRONG_ATTEMPT_PENALTY = 50;
-export const MAX_WRONG_DISPLAY = 999;
 
 export interface AttemptResult {
   /** true si la sélection correspond exactement aux lignes buguées. */
@@ -96,48 +95,3 @@ export function isGameComplete(progress: GameProgress): boolean {
   return LEVELS.every((l) => isLevelSolved(progress, l.id));
 }
 
-const STORAGE_KEY = "solidity-escape-3d-progress-v1";
-
-export function loadProgress(): GameProgress {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return emptyProgress();
-    const parsed = JSON.parse(raw) as Partial<GameProgress>;
-    if (typeof parsed !== "object" || parsed === null) return emptyProgress();
-    const solved: GameProgress["solved"] = {};
-    const src = (parsed.solved ?? {}) as Record<string, unknown>;
-    for (const level of LEVELS) {
-      const entry = src[level.id];
-      if (typeof entry === "object" && entry !== null) {
-        const e = entry as Record<string, unknown>;
-        solved[level.id] = {
-          hintsUsed: Math.max(0, Math.min(3, Math.floor(Number(e["hintsUsed"]) || 0))),
-          wrongAttempts: Math.max(0, Math.min(MAX_WRONG_DISPLAY, Math.floor(Number(e["wrongAttempts"]) || 0))),
-          score: Math.min(level.basePoints, Math.max(0, Math.floor(Number(e["score"]) || 0))),
-          timeMs: Math.max(0, Math.floor(Number(e["timeMs"]) || 0)),
-        };
-      }
-    }
-    const startedAt = Number(parsed.startedAt);
-    return { solved, startedAt: Number.isFinite(startedAt) && startedAt > 0 ? startedAt : Date.now() };
-  } catch {
-    return emptyProgress();
-  }
-}
-
-export function saveProgress(progress: GameProgress): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-  } catch {
-    // stockage indisponible (navigation privée…) : le jeu reste jouable en mémoire.
-  }
-}
-
-export function clearProgress(): GameProgress {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    /* ignore */
-  }
-  return emptyProgress();
-}

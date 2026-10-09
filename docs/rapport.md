@@ -17,19 +17,19 @@ Le projet croise trois domaines que je ne maîtrisais pas au départ et que la c
 accessibles :
 
 - **Trois.js / WebGL** : scène 3D, contrôles FPS, portes animées, terminaux interactifs, éclairage.
-- **Sécurité Solidity** : réentrance, `tx.origin`, contrôle d'accès, aléa prévisible, `delegatecall`.
-- **Moteur de jeu robuste** : entrées corrompues, `localStorage` cassé, score borné, pas d'exception.
+- **Sécurité Solidity** : ADN non borné, `tx.origin`, réentrance.
+- **Moteur de jeu robuste** : entrées corrompues, score borné, pas d'exception.
 
 ## 3. Les trois salles
 
-| Salle | Contrat | Vulnérabilité | Difficulté | Points |
+| Salle | Contrat | Bug à trouver | Difficulté | Points |
 | --- | --- | --- | --- | --- |
-| 01 — Le Badge | `LabToken` | Contrôle d'accès (modificateur `onlyOwner` oublié) | Facile | 1000 |
+| 01 — Le Labo | `ZombieFactory` | ADN non borné (`dnaModulus` jamais utilisé) | Facile | 1000 |
 | 02 — Le Fantôme | `BadgeDoor` | Authentification `tx.origin` | Facile | 1000 |
 | 03 — Le Coffre | `Vault` | Réentrance (ordre des opérations) | Moyen | 1200 |
 
-Chaque salle est une **mini-leçon à la CryptoZombies** : une mission explicite (« trouve la fonction qui
-devrait être réservée au propriétaire »), un contrat court et lisible, **un seul bug** à désigner, et une
+Chaque salle est une **mini-leçon à la CryptoZombies** : une mission explicite (« trouve la ligne qui
+stocke l'ADN sans le réduire »), un contrat court et lisible, **un seul bug** à désigner, et une
 progression de difficulté douce. Après l'audit, le joueur reçoit l'**explication** de la faille
 (DAO 2016…) et le **correctif** idiomatique.
 
@@ -41,7 +41,7 @@ src/
 ├── styles.css         HUD, overlays, coloration
 └── game/
     ├── levels.ts      la donnée : contrats, lignes buguées, 3 indices, correctifs
-    ├── engine.ts      règles PURES : sélection, check, score, sauvegarde — ne lève jamais
+    ├── engine.ts      règles PURES : sélection, vérification, score — ne lève jamais
     ├── collision.ts   collisions PURES : murs, portes, pupitres (testables sans WebGL)
     ├── highlight.ts   coloration syntaxique Solidity maison
     ├── world.ts       scène Three.js (salles, portes, terminaux, FPS)
@@ -70,9 +70,8 @@ Voir la capture `docs/screenshots/08-harness.png`. Tout est dans le dépôt :
 
 ## 6. Solidité (« je vais essayer de la casser »)
 
-- Le moteur normalise **toute** entrée : sélection vide, doublons, hors bornes, `NaN`, chaînes,
-  `null`, `localStorage` corrompu. Il ne lève jamais.
-- Score plancher à 100, pénalités d'indices plafonnées, progression réparable.
+- Le moteur normalise **toute** entrée : sélection vide, doublons, hors bornes, `NaN`, chaînes, `null`. Il ne lève jamais.
+- Score plancher à 100, pénalités d'indices plafonnées ; chaque lancement repart d'une partie neuve.
 - TypeScript **strict** (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`), zéro `any`.
 - **34 tests Vitest** + lint + build, en local et en **CI GitHub Actions** (`npm run verify`).
 

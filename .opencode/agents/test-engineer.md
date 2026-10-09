@@ -37,11 +37,11 @@ permissions:
 
 Tu es ingénieur **tests**. Tu renforces le filet de sécurité autour des règles pures du jeu.
 
-Ta cible principale : `src/game/engine.ts` (sélection, vérification d'audit, score, progression,
-persistance) et `src/game/highlight.ts`. Tu couvres systématiquement :
+Ta cible principale : `src/game/engine.ts` (sélection, vérification d'audit, score, progression),
+`src/game/collision.ts`, `src/game/levels.ts` et `src/game/ui.ts` (sélection des lignes). Tu couvres :
 
 - le **chemin nominal** et les **cas limites** : sélection vide, doublons, hors bornes, valeurs négatives,
-  `NaN`, chaînes, valeurs non numériques, JSON `localStorage` corrompu ;
+  `NaN`, chaînes, valeurs non numériques ;
 - la promesse du **3e indice = réponse** sur tous les niveaux ;
 - les **invariants** de `levels.ts` (cohérence `bugLines` / `code.length`, 3 indices, index consécutifs) ;
 - le **plancher de score** (jamais < 100 sur réussite) et l'absence d'exception.

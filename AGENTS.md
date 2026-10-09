@@ -14,7 +14,7 @@ C'est le **TP3** du cours *Outils d'IA pour développeurs – IUT 2026/2027*.
 | --- | --- |
 | `src/main.ts` | Orchestrateur : état, progression, victoire |
 | `src/game/levels.ts` | **Donnée du jeu** : contrats piégés, lignes buguées, 3 indices, correctifs |
-| `src/game/engine.ts` | Règles pures (aucun DOM, aucun Three.js) : sélection, score, sauvegarde |
+| `src/game/engine.ts` | Règles pures (aucun DOM, aucun Three.js) : sélection, vérification d'audit, score |
 | `src/game/collision.ts` | Collisions pures (murs, portes, pupitres), testables sans WebGL |
 | `src/game/world.ts` | Scène Three.js : salles, portes, terminaux, contrôles FPS |
 | `src/game/ui.ts` | Interface DOM : titre, HUD, panneau d'audit, victoire |
@@ -54,7 +54,7 @@ npm run build      # build de production dans dist/
 - Pas de `any`. Pas de `console.log` laissé. Pas de dépendance inutile.
 - Toute logique de jeu nouvelle arrive **avec ses tests** dans `tests/`.
 - Les messages utilisateur sont en **français**, l'anglais reste pour les identifiants de code.
-- Ne pas casser `localStorage` : la progression doit survivre à un rechargement et à un JSON corrompu.
+- **Aucune persistance** : chaque lancement démarre une partie neuve. Le bouton « Rejouer » réinitialise tout (progression, portes, écran de victoire).
 
 ## Interdits
 

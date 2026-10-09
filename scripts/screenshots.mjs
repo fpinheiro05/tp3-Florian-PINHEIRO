@@ -199,6 +199,19 @@ async function main() {
   await page.screenshot({ path: join(OUT, "07-victoire.png") });
   console.log("✓ 07-victoire.png");
 
+  // Vérifie que « Rejouer » réinitialise réellement (progression + écran de victoire).
+  await page.click("#btn-restart");
+  await sleep(600);
+  const winOpen = await page.evaluate(() =>
+    document.querySelector("#ov-win")?.classList.contains("open") ?? false,
+  );
+  const solvedAfter = (await page.textContent("#chip-solved"))?.trim();
+  if (winOpen || solvedAfter !== "0") {
+    throw new Error(`Reset cassé : victoireOuverte=${winOpen}, sallesRésolues=${solvedAfter}`);
+  }
+  await page.screenshot({ path: join(OUT, "09-reset.png") });
+  console.log("✓ 09-reset.png (reset OK)");
+
   // Carte du filet (si le transcript existe).
   try {
     const gate = await readFile(join(ROOT, "docs", "preuves", "verify.txt"), "utf8");

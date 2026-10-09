@@ -393,6 +393,11 @@ export class Ui {
   closePuzzle(): void {
     this.close("ov-puzzle");
   }
+
+  /** Ferme l'écran de victoire (utilisé au redémarrage d'une partie). */
+  closeWin(): void {
+    this.close("ov-win");
+  }
 }
 
 export function levelBadgeRows(
